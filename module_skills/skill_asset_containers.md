@@ -51,8 +51,8 @@ bare recursive clone builds instead of reaching for a registry; `docker images` 
 `Dockerfile` copies its package onto `python:3.12-slim` with the module's own pins.
 Concurrency is bounded by `JOBS`. One mechanism only — no
 `mem_limit` beside it, no reservation, no CPU quota, and no restart policy,
-because a failure is reported, not hidden. Every container carries the four
-`/store/<content>` mounts and no code mount: the image carries its module's package under `/app`, and
+because a failure is reported, not hidden. Every container but `devops` carries the four
+`/store/<content>` mounts, and none carries a code mount: the image carries its module's package under `/app`, and
 the stores are the one thing a container reaches on the host. Because a service's `volumes:` replaces
 the anchor's key rather than extending it, `devops` respells it to the socket alone, dropping the store
 mounts it never reads, and takes the host's docker group through `group_add` so it reads the socket

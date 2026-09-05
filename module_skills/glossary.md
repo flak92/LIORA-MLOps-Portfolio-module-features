@@ -236,6 +236,7 @@ new repository — only for a distinct responsibility.
 | `build_ticker_parser()`, `parse_tickers()` | `module_data/config.py`, `module_features/config.py`, `module_ml/config.py` | the one CLI every stage shares; `module_monitoring` runs no stage and parses no ticker argument |
 | `rounded()` | `module_data/config.py`, `module_ml/config.py` | the two status reports round the same way |
 | `RESEARCH_START_UTC`, `RESEARCH_END_UTC` (and their `_MS`) | `module_features/config.py` (the bars and the catalogue), `module_ml/config.py` (the labels and the folds) | the frozen window is the experiment's; each layer that bounds by it owns the literal |
+| `catalogue_json()` | `module_features/config.py`, `module_ml/config.py` | the writer names the contract it writes, the reader the contract it reads |
 | `feature_id()` | `module_features/config.py`, `module_ml/config.py` | the grammar of `module_features/skills/skill_feature_taxonomy.md`, two lines, restated where X's columns are named |
 | `TREND_GATE_FEATURE_DEFINITION` | `module_features/config.py` (the first record of the catalogue), `module_ml/config.py` (the same name as a literal) | the strategy reads the trend definition by name from the contract's columns |
 | `to_json_safe()`, `write_json()` | `module_features/dataset.py`, `module_ml/dataset.py` | the one canonical JSON form every published object takes — the contract, the snapshots, the artifacts |
@@ -256,13 +257,14 @@ timeframe slots, and paths are built only by the descriptors of
 (the rest); whether an asset holds its three result files is asked
 once, by `is_artifact_set_complete()` beside them.
 
-The eleven manifest files in `LC_COLLATE=C` listing order — the order
-`FILE_MANIFEST` in `module_ml/status.py` and the generated README share; the
+The twelve manifest files in `LC_COLLATE=C` listing order — the order
+`file_manifest()` in `module_ml/status.py` and the generated README share; the
 two a hand's stages write are listed with no size until they exist:
 
 | file | written by | holds |
 |---|---|---|
 | `<TICKER>_README.md` | `module_ml/status.py` | what the folder holds and what came out of it; no timestamp |
+| `<TICKER>_catalogue.json` | `module_features/catalogue.py` | the feature layer's contract the ML layer reads instead of the feature configuration: `decision_timeframe`, `timeframes` (each `timeframe`, `slot`, `duration_ms`), `warmup_top_timeframe_bars`, `warmup_end_ms`, `columns_by_timeframe`, `default_columns_by_timeframe`, `parquet_by_timeframe` |
 | `<TICKER>_feature_set.json` | `module_ml/feature_set_promote.py` | `columns_by_timeframe` — the promoted feature set, a hand's choice, and nothing else; absent, the default set is the asset's; tracked, like the parameters it conditions |
 | `<TICKER>_feature_set_search.json` | `module_ml/feature_set_search.py` | `inputs`, `trials`, `champion_trial`, `pass_count`, `search_converged`, `proposals` — the ledger of every scored trial, the search's own state, rewritten after every scored trial; present once a search has run |
 | `<TICKER>_features_ss-15-hh-dd-MM.parquet` | `module_features/catalogue.py` | the catalogue on 15m — `decision_ts` and every definition offered on 15m, on the decision grid |
@@ -277,8 +279,8 @@ two a hand's stages write are listed with no size until they exist:
 Three files are tracked — `<TICKER>_README.md`, `<TICKER>_parameters.json` and,
 once a hand has promoted one, `<TICKER>_feature_set.json`: together they make a
 folder readable, and reproducible, without a run, because the parameters are
-tuned for the set they were searched under. The eight others are regenerable —
-the seven the chain rebuilds from the database, and the search result a hand
+tuned for the set they were searched under. The nine others are regenerable —
+the eight the chain rebuilds from the database, and the search result a hand
 reruns. Beside the manifest, outside it, `<TICKER>_research_ohlcv.duckdb`
 holds the canonical series and its aggregations — its size moves with every
 top-up, and the README is byte-reproducible for an unchanged experiment — and
@@ -298,7 +300,7 @@ The grammar is `module_features/skills/skill_feature_taxonomy.md`, the definitio
 | a feature definition — terms of one timeframe composed by the operators, with an optional normaliser; the timeframe-less half of a feature | one record of `FEATURE_CATALOGUE`; `feature_definition_name()`; `OPERATORS` = {`minus`, `over`} and `NORMALISERS` = {`centered`}, one record per token beside its kernel in `module_features/catalogue.py` | `feature_definition` | definition | molecule, family, feature family, indicator (for a composite); `trend`, `momentum`, `volatility`, `structure`, `activity` — a category, not a computation |
 | a feature — a definition aligned to the decision grid on one timeframe; the column of X and the key of an importance | `feature_id()` = `<definition>_<timeframe>` | `feature_columns`, the keys of an importance | the feature id | a column literal in a page script; a parquet column with a timeframe (the file name carries it) |
 | the feature catalogue — every definition the repository can compute, with the timeframes it is offered on; drafted, like the rest of `config.py` | `FEATURE_CATALOGUE`, `catalogue_columns()`, `CATALOGUE_COLUMNS`; the stage `features-catalogue`, `module_features/catalogue.py` | `catalogue` (of `features_status.json`); `<TICKER>_catalogue.json` | CATALOGUE | palette (the drawing's word for a colour set — `paletteOf` of the template), feature list, feature store |
-| the feature layer's contract, per asset — what the ML layer reads instead of this module's configuration | `catalogue_contract()`, `catalogue_json()` in `module_features/config.py`; read once per stage by `load_catalogue()` of `module_ml/dataset.py` and carried as `cat`, the helpers of `module_ml/config.py` reading the dict and building paths from it | `<TICKER>_catalogue.json`: `decision_timeframe`, `timeframes` (`timeframe`, `slot`, `duration_ms`), `warmup_top_timeframe_bars`, `warmup_end_ms`, `columns_by_timeframe`, `default_columns_by_timeframe`, `parquet_by_timeframe` | — | an import of `module_features` from `module_ml`; a token or a slot parsed in the ML layer; a second read of the file inside one stage; a path built from the slot grammar outside `module_features` |
+| the feature layer's contract, per asset — what the ML layer reads instead of this module's configuration | `catalogue_contract()` and `catalogue_json()` in `module_features/config.py`, the descriptor's copy in `module_ml/config.py` (§ Twice by extraction); read once per stage by `load_catalogue()` of `module_ml/dataset.py` and carried as `cat`, the helpers of `module_ml/config.py` reading the dict and building paths from it | `<TICKER>_catalogue.json`: `decision_timeframe`, `timeframes` (`timeframe`, `slot`, `duration_ms`), `warmup_top_timeframe_bars`, `warmup_end_ms`, `columns_by_timeframe`, `default_columns_by_timeframe`, `parquet_by_timeframe` | — | an import of `module_features` from `module_ml`; a token or a slot parsed in the ML layer; a second read of the file inside one stage; a path built from the slot grammar outside `module_features` |
 | the effective history a parameter covers on a timeframe, `bars × timeframe` — a window's window, a recursion's span or period, the bars carrying most of its weight — the number the nesting rule compares | `definition_effective_history_hours()` | `effective_history_hours_by_timeframe`; `lower_longest_effective_history_hours`, `upper_shortest_effective_history_hours` of `nesting` | effective history | history (bare — a recursion has no window), span (the EMA parameter word), lookback hours |
 | the trade's Bollinger reading of `zscore20` — %b(20, 2σ) = zscore20 / 4 + 0.5, an affine map a tree model is invariant to; no %b column exists | — | — | Bollinger %b, in the definitions table | `bb20`, `%b` as a column, `z / 2 + 0.5` |
 | the definitions an asset's model sees until a promotion — the frozen experiment's fifteen columns, in the order it stacks them | `DEFAULT_FEATURE_COLUMNS_BY_TIMEFRAME`; `definition_in_default_set` of a record | `definition_in_default_set` | default set | the frozen fifteen (as a name) |
@@ -408,7 +410,7 @@ sub-module and the control that opens its page.
 | a flow: an edge between two primitives of one view — dashed, arrowed at its target, coloured by the island it leaves, rising with its length | `type: 'flow'`, `FLOW_LIFT_PER_LENGTH`, `FLOW_TIP_GAP` | `flows` — `{from, to}` over primitive ids | the third row of the edge key | arrow, pipeline, dataflow, dependency, link, chord; a flow to a path; the `flow` block of `data_status.json`, a count table |
 | an instance: one virtual machine of the deployment view — the host containers run on: the task host, its durable volume drawn beside it as a store, and the strategy host | role `instance`; "host" in a primitive's name | — | Task host / Strategy host | `instance` or `host` for a container — a container is a *machine* in the DevOps panel; a host per asset; node |
 | a role a view gives a path for itself — the aggregate folder a `database` on the primitives, an `artifact` as tracked | `roles` in the `deployment` block | `deployment.roles` | the word the panel shows in that view | a second `aggregate`; a role that changes the tree |
-| the notice: the words a view shows in the top right, in red capitals — what the picture is, in the presenter's words | `notice` | `notice` (per view) | *Mapping functionalities into AWS-env architecture in progress — the files and folders of this repository are shaped for the move* on the deployment view | banner, watermark, disclaimer, badge; a notice on a view that has nothing to say |
+| the notice: the words a view shows in the top right, in red capitals — what the picture is, in the presenter's words | `notice` | `notice` (per view) | *Mapping functionalities into AWS-env architecture in progress — the files and folders of five repositories are shaped for the move* on the deployment view | banner, watermark, disclaimer, badge; a notice on a view that has nothing to say |
 
 The drawing is redrawn by hand with `make dx-update` and by nothing else. It is a derived
 artifact under *Derived, never drafted*: a hand edit to it is a violation, and the provenance stamp

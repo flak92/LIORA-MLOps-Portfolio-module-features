@@ -35,7 +35,7 @@ and each asset's row counts, the one run-state fact this module has.
 
 ## Stages
 
-Run in order; `make features-all` runs the chain. The two per-asset stages fan out
+Run in order; in the workspace the Orchestration `make features-all` runs the chain, each stage in a one-off container of this module's image, and this repository's own Makefile runs one stage at a time in a venv. The two per-asset stages fan out
 one process per asset with its threads pinned to one; `status` runs once over the
 assets the launcher names.
 

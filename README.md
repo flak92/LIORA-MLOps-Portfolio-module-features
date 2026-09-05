@@ -11,9 +11,7 @@ directory by setting the variables. `make help` lists the stages.
 
 ## Store contract
 
-Every stage reads a store, writes a store and exits; it learns where the stores
-are from `STORE_RAW_1M_DIR`, `STORE_ASSETS_ARTIFACTS_DIR`, `STORE_RUN_RECORDS_DIR`
-and `STORE_STATUS_DIR`, and nothing else on the host.
+Every stage reads a store, writes a store and exits; it learns where the stores are from `STORE_RAW_1M_DIR`, `STORE_ASSETS_ARTIFACTS_DIR`, `STORE_RUN_RECORDS_DIR` and `STORE_STATUS_DIR`, and nothing else on the host.
 
 | stage | reads | writes |
 |---|---|---|
@@ -23,9 +21,7 @@ and `STORE_STATUS_DIR`, and nothing else on the host.
 
 ## Image
 
-`docker build -t liora-module-features .` — `python:3.12-slim`, the pins of
-`requirements.txt`, the package copied in; nothing of the state. Orchestration
-builds the same image as `docker compose build features` and runs every stage in it.
+`docker build -t liora-module-features .` — `python:3.12-slim`, the pins of `requirements.txt`, the package copied in; nothing of the state. Orchestration builds the same image as `docker compose build features` and runs every stage of this module in it.
 
 ## Documents
 
@@ -57,6 +53,7 @@ and changed on every side at once.
 | `to_utc_ms()` | twice by extraction — the other in `LIORA-MLOps-Portfolio-module-data`, `LIORA-MLOps-Portfolio-module-ml` |
 | `build_ticker_parser()`, `parse_tickers()` | twice by extraction — the other in `LIORA-MLOps-Portfolio-module-data`, `LIORA-MLOps-Portfolio-module-ml` |
 | `RESEARCH_START_UTC`, `RESEARCH_END_UTC` (and their `_MS`) | twice by extraction — the other in `LIORA-MLOps-Portfolio-module-ml` |
+| `catalogue_json()` | twice by extraction — the other in `LIORA-MLOps-Portfolio-module-ml` |
 | `feature_id()` | twice by extraction — the other in `LIORA-MLOps-Portfolio-module-ml` |
 | `TREND_GATE_FEATURE_DEFINITION` | twice by extraction — the other in `LIORA-MLOps-Portfolio-module-ml` |
 | `to_json_safe()`, `write_json()` | twice by extraction — the other in `LIORA-MLOps-Portfolio-module-ml` |

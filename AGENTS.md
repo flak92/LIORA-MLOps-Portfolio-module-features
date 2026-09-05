@@ -375,7 +375,7 @@ The boundaries, each with the file that owns it: the QuantConnect Lean tree
 (`module_data/lean.py`), the Binance and Bybit REST parameters
 (`download_binance.py`, `download_bybit.py`), xgboost and optuna
 (`module_ml/model.py`, `module_ml/hpo.py`), numpy (every module that computes),
-argparse (`module_data/config.py`, `module_data/status.py`,
+argparse (`module_data/config.py`, `module_features/config.py`, `module_ml/config.py` — the one parser, twice by extraction —, `module_data/status.py`,
 `module_ml/feature_set_promote.py`, `sub_module_dx/visualise.py`), DuckDB SQL (every module that queries), the SVG
 and DOM attributes (every `*.js` of `module_monitoring`, its sub-modules included, and the canvas of
 the drawing's template), docker compose (`Makefile`,
@@ -452,9 +452,9 @@ still carries the rules it answers to; the copy is stamped by
 from, `make skills-status` in the workspace reports any copy that differs from
 the canon, `make skills-distribute` overwrites every copy from the canon and
 rewrites the stamp, and a copy is never edited by hand — a change to a rule is
-made at the source, distributed, committed in each module repository as *Take
-the distributed rules from LIORA-MLOps-Portfolio-Orchestration@<commit>*, and
-pinned. `module_skills/README.md` is the index — it links to every skill,
+made at the source and committed there first — the stamp names that commit —
+then distributed, committed in each module repository as *Take the distributed
+rules from LIORA-MLOps-Portfolio-Orchestration@<commit>*, and pinned. `module_skills/README.md` is the index — it links to every skill,
 cross-cutting and module-owned alike, the module-owned ones by absolute GitHub
 URL, and restates none of them.
 
@@ -515,14 +515,14 @@ that breaks one is wrong.
 | D17 | neither the drawing nor the panel is a repository: `sub_module_dx/` is Orchestration's, `module_monitoring/sub_module_devops/` the monitoring module's |
 | D18 | artifact names and keys are the monorepo's, with the registered exceptions: `<TICKER>_catalogue.json`, the one new file; the `catalogue` block, moved whole from `ml_status.json` to `features_status.json`, beside the one new key `assets[].row_count_by_timeframe`; the `ticker` key in every row of `data_status.json` |
 | D19 | determinism is unchanged: the caps, the seed, the pinned orders (`module_skills/skill_determinism.md`) |
-| D20 | parity: the chain on the frozen raw store reproduces the nine BTC artifacts and the three normalised snapshots byte for byte (the Orchestration `README.md` § Parity) |
+| D20 | parity: the chain on the frozen raw store reproduces the nine BTC artifacts and the three normalised snapshots byte for byte against the reference list the Orchestration `README.md` § Parity names — the monorepo's, re-based once after the split for the one row the asset README gained, its manifest naming `<TICKER>_catalogue.json` |
 | D21 | zero cloud mechanisms and zero new dependencies: the four pins are the monorepo's |
 | D22 | `features_status.json` is written by `module_features.status` |
 | D23 | every module repository's `README.md` carries the rows of `module_skills/glossary.md` § Twice by extraction that name it |
 | D24 | the old repository carries the tags `monorepo-baseline` and `monorepo-split-ready` |
 | D25 | the tracked remnant of the artifacts store — `<TICKER>_README.md`, `<TICKER>_parameters.json` and, once promoted, `<TICKER>_feature_set.json` — and the three snapshots are tracked in Orchestration |
 | D26 | the fan-out and the detached search run through `docker compose run --rm`; nothing is `exec`'d into a resident |
-| D27 | the old repository's `README.md` opens with the banner naming Orchestration as its successor |
+| D27 | the old repository's `README.md` is the split notice alone — the five repositories, Orchestration first, and the two tags — and its GitHub description says the same |
 
 ## Skills absent here, described
 
