@@ -1,6 +1,6 @@
 # The module alone, in a venv, against the four stores it is given: the workspace's by default (one level up), any
-# other by setting the variables. The chain, the images and the residents are the Orchestration repository's Makefile and
-# docker-compose.yml; this file names no docker, no compose and no tmux.
+# other by setting the variables. The chain, the images and the residents are the Orchestration repository's; this file
+# runs the module's own stages and nothing else.
 PY := .venv/bin/python
 # every stage takes its assets by --tickers; a stage without ASSET= stops here, not in the module
 ASSET ?= $(error ASSET=<TICKER> is required)
