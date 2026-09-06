@@ -125,7 +125,7 @@ Each `module_*` is an **extracted bounded context**: its domain rules, its
 orientation and its code sit together in its own repository, so its meaning is
 never reconstructed from documentation that stayed elsewhere. It builds its own
 image from its own tree alone (`docker build` in the repository, outside any
-workspace), runs standalone against the four stores its `Makefile` is pointed at
+workspace), runs standalone against the stores its `Makefile` is pointed at
 (`make setup`, then `make <module>-<stage> ASSET=<TICKER>` in a venv), and knows
 nothing of the others: they share the store contract, the files it names and the
 copies the register lists, and nothing between them speaks over a network.

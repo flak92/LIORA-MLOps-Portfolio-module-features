@@ -155,7 +155,7 @@ Three questions choose each layer's form, and the tree answers each:
 The task host and the store volume — one Linux container instance every asset's
 runs share (Amazon ECS on Amazon EC2) and its durable disk mounted at `/store`
 (Amazon EBS), every asset's folder and the other `store_*` roots. Today: the
-four `./store_<content>:/store/<content>` mounts. The move: `./store_<content>`
+`./store_<content>:/store/<content>` mounts of the services that touch them. The move: `./store_<content>`
 read as `<volume>/<content>`; no stage notices. A second asset is one more folder on the same volume. A rename.
 
 The service that runs the tasks (Amazon ECS on Amazon EC2), the state machine
@@ -391,8 +391,9 @@ missed.
   exists (§ The rebuild condition stays separable). The Makefile stays the
   developer interface and stops being what runs the day.
 - **The image carries the code — where the tree stands.** Each module
-  repository's `Dockerfile` copies its package, the mounts are the four stores
-  alone (§ Docker is compute, not storage), and the one thing elsewhere adds is
+  repository's `Dockerfile` copies its package, the mounts carry the stores each
+  service touches, read-only where it only reads (§ Docker is compute, not
+  storage), and the one thing elsewhere adds is
   the registry that holds the four images. A run without a host is a sentence in
   the `run --rm -T <runner>` row of § The mapping table, never a phase.
 
@@ -622,7 +623,7 @@ The tree as it stands, in four columns; a row disappears with the line it names.
 | `module_features/bars.py` opens `module_data`'s database read-write; every open downstream is read-only | one stored object, two writing modules, across the storage → feature-compute line | one durable writer at a time, sequenced by `features-all` and enforced by the whole-file lock; the aggregation tables are a pure, idempotent function of `ohlcv_1m_canonical`; a second database is forbidden by `module_data/skills/skill_candle_canonicalisation.md` § 13 | no — described |
 | every status stage takes `--tickers` and folds the assets the launcher named — the whole basket, once in its module's runner | one object per basket, safe only because it has one writer | a basket-wide object is produced only by the one-off vehicle, never fanned out; a per-asset object and a reader-side fold if the basket grows | no — described |
 | the three snapshots are written into `store_status/` and tracked | status objects live in their own store beside the other three, never under a `module_*` | moved: STORAGE produced by DATA, FEATURE and ML compute, tracked as a property of the demonstration so a fresh clone opens on real numbers; the move turned the five points — the path constants (`DATA_STATUS_JSON_PATH`, `FEATURES_STATUS_JSON_PATH`, `ML_STATUS_JSON_PATH` under `STORE_STATUS_DIR`), the directory `serve.py` serves (its own package), the literal fetches (under `/store_status/`) — and met the prerequisite of narrowing the mount; the third snapshot arrived by the same route; `skill_status_prefix.md` (`AGENTS.md` § Skills absent here, described) is thereby answered and no longer listed | yes — done |
-| each module repository's `Dockerfile` copies its package onto its pins; the mounts carry the four stores alone | none: the image is a compute artifact, the mount is state | the phase *the image carries the code* of § The retrain runtime is a ladder, reached by the split; `skill_image_contents.md` (`AGENTS.md` § Skills absent here, described) is thereby answered and no longer listed | yes — done |
+| each module repository's `Dockerfile` copies its package onto its pins; the mounts carry the stores each service touches, read-only where it only reads | none: the image is a compute artifact, the mount is state | the phase *the image carries the code* of § The retrain runtime is a ladder, reached by the split; `skill_image_contents.md` (`AGENTS.md` § Skills absent here, described) is thereby answered and no longer listed | yes — done |
 | `record.py` measures a stage from outside — its time, its exit code, and the difference of the four stores | no stage → artifact map anywhere: what a stage wrote is read off the store, so measurement knows no module | the recorder is the repository's, beside the Makefile that runs the stages, and lists exactly what a task scheduler records about a task; the stage order stays the Makefile's | yes — done |
 | a recorded run stops at the first stage that exits non-zero and keeps that stage's record | the verdict is the exit codes, which are in the record | the same judgement an execution record makes anywhere: no probe, no finaliser, nothing that needs `docker` or `git` on the host — a clause of `skill_stage_state_machine.md` (`AGENTS.md` § Skills absent here, described) | yes — done |
 | `module_monitoring/` is served wholesale, five routes and a proxy beside static files | one root is page and package; the status store is reached through one route | the page files are static objects of the package, the snapshots static objects of another store; the routes are a reader process | no — described |
