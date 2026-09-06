@@ -7,8 +7,8 @@ module of the chain, a role and a one-off each, each in its module's image — a
 of the basket, in the monitoring module's image, differing only by
 `ASSET=<TICKER>`; every service written out in `docker-compose.yml` under three anchors: `x-store-environment` is
 the store contract every service carries — the four `STORE_*_DIR` and the thread cap —, `x-service` is what
-every service is — `init`, `user`, the store environment and the four store mounts — each runner adding its module's
-`build` and `image`, the residents taking the monitoring image from `x-server` — and
+every service is — `init`, `user` and that contract — each service adding its module's `image`, the runners their
+`build` beside it, and the mounts of the stores it touches; and
 `x-server` adds the one `command: python -m module_monitoring.serve` the dashboard and the
 assets share, which is why the runners stay outside it. The project is named `liora` in the file, so a
 container is `liora-<service>-1` on every host. The dashboard
@@ -33,9 +33,9 @@ Stated, not mitigated. The panel's own contract is
 
 | service | image | role | lifetime |
 |---|---|---|---|
-| `data`, `features`, `ml` — one runner per module of the chain | the `x-service` anchor plus the module's `build: ./<9NN>-module_<domain>` and `image: liora-module-<domain>` — no `command:`, so `run --rm -T` supplies one; `ml` alone adds the `5g` ceiling | every stage of its module: a per-asset stage as one one-off container per asset through the `fanout` macro, a basket-wide stage once through `basket`, the one-asset promotion a hand starts with `ASSET=`; a download stays one process per venue because a venue's per-IP limit is budgeted per process | one-off |
-| `dashboard` | the `x-server` anchor — whose `image:` is the monitoring module's — with that module's `build:`, plus `ports:` and a respelled `volumes:` — the anchor's four store mounts and the repository's drawing read-only below its web root, `./sub_module_dx:/app/module_monitoring/sub_module_dx:ro` | the same server in its dashboard role, published on `127.0.0.1:${PORT}` only | resident |
-| `asset-<ticker>` × one per ticker of `TICKERS` | the `x-server` anchor with the monitoring module's `image:`, plus an `environment:` that merges `<<: *store_environment` with `ASSET: <TICKER>` | the same server in its asset role | resident |
+| `data`, `features`, `ml` — one runner per module of the chain | the `x-service` anchor plus the module's `build: ./<9NN>-module_<domain>` and `image: liora-module-<domain>`, and the stores its stages touch — `data` the raw tree, the artifacts and the status store, `features` and `ml` the artifacts and the status store — no `command:`, so `run --rm -T` supplies one; `ml` alone adds the `5g` ceiling | every stage of its module: a per-asset stage as one one-off container per asset through the `fanout` macro, a basket-wide stage once through `basket`, the one-asset promotion a hand starts with `ASSET=`; a download stays one process per venue because a venue's per-IP limit is budgeted per process | one-off |
+| `dashboard` | the `x-server` anchor — whose `image:` is the monitoring module's — with that module's `build:`, plus `ports:` and four read-only mounts — the artifacts, the run records and the status store it reads, and the repository's drawing below its web root, `./sub_module_dx:/app/module_monitoring/sub_module_dx:ro` | the same server in its dashboard role, published on `127.0.0.1:${PORT}` only | resident |
+| `asset-<ticker>` × one per ticker of `TICKERS` | the `x-server` anchor with the monitoring module's `image:`, plus an `environment:` that merges `<<: *store_environment` with `ASSET: <TICKER>`, and the artifacts and the status store read-only | the same server in its asset role | resident |
 | `devops` | the `x-service` anchor with the monitoring module's `image:`, plus its own `command:`, `group_add:` and the one mount, the socket | the DevOps panel's server: the one container that holds the docker socket | resident |
 
 `init: true` on every service: a Python process as PID 1 has no SIGTERM
@@ -51,14 +51,14 @@ bare recursive clone builds instead of reaching for a registry; `docker images` 
 `Dockerfile` copies its package onto `python:3.12-slim` with the module's own pins.
 Concurrency is bounded by `JOBS`. One mechanism only — no
 `mem_limit` beside it, no reservation, no CPU quota, and no restart policy,
-because a failure is reported, not hidden. Every container but `devops` carries the four
-`/store/<content>` mounts, and none carries a code mount: the image carries its module's package under `/app`, and
-the stores are the one thing a container reaches on the host. Because a service's `volumes:` replaces
-the anchor's key rather than extending it, `devops` respells it to the socket alone, dropping the store
-mounts it never reads, and takes the host's docker group through `group_add` so it reads the socket
-without being root, and `dashboard` respells the four to add the repository's drawing read-only below
-its web root; the raw store stays central and Lean-exact. The store contract is the env-named path,
-and code and state never share a mount (`skill_pre_aws_solution.md` § Docker is compute,
+because a failure is reported, not hidden. Each service mounts the stores it
+touches and no more, read-only where it only reads, and none mounts code: the image carries its
+module's package under `/app`, and the stores are the one thing a container reaches on the host. The
+four `STORE_*_DIR` stay on the anchor for every service — the variable is the name a service speaks,
+the mount the I/O it is granted — which is why `devops` carries the four names and no store, and takes
+the host's docker group through `group_add` so it reads the socket without being root. The raw store
+is `data`'s alone, central and Lean-exact; the three residents read and write nothing, so their mounts
+are `:ro`. The store contract is the env-named path, and code and state never share a mount (`skill_pre_aws_solution.md` § Docker is compute,
 not storage). Every process binds
 `0.0.0.0` on the internal port 8900 — `CONTAINER_PORT` in `module_monitoring/config.py`, with no
 argument: the server is docker-only. `PORT` is only the host side of the
@@ -96,7 +96,7 @@ repository (the whole recipe, the ticker's precondition included: the Orchestrat
 each resident a service of the container runtime kept running on the one Linux container
 instance (Amazon ECS on Amazon EC2): `asset-<ticker>` is the resident's `ASSET` override, the
 `fanout` macro's `run --rm` already a task run per stage per asset — nothing left to
-edit — the four store mounts the volume, each module's image the task's image, the `ml` runner's
+edit — the store mounts the volume, each module's image the task's image, the `ml` runner's
 `5g` the task's memory, `init` and `user` the task definition's own keys. `skill_pre_aws_solution.md` § The mapping table and
 § The retrain runtime is a ladder.
 

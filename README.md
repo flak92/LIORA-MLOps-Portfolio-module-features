@@ -17,7 +17,7 @@ builds the old commit (the Orchestration `README.md` § Contributing).
 
 ## Store contract
 
-Every stage reads a store, writes a store and exits; it learns where the stores are from `STORE_ASSETS_ARTIFACTS_DIR`, `STORE_STATUS_DIR` — the 2 of the four stores this module touches — and nothing else on the host.
+Every stage reads a store, writes a store and exits; it learns where the stores are from `STORE_ASSETS_ARTIFACTS_DIR`, `STORE_STATUS_DIR` — the two of the four stores this module touches — and nothing else on the host.
 
 | stage | reads | writes |
 |---|---|---|

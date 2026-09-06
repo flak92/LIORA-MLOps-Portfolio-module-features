@@ -148,7 +148,7 @@ Three questions choose each layer's form, and the tree answers each:
 
 | question | answer here | what it decides |
 |---|---|---|
-| does a stage need the host's disk between runs? | yes: the database file under its whole-file lock, the raw ZIPs and the artifacts at one path, read and written through the four `/store/<content>` mounts by every stage (`AGENTS.md` § Pre-AWS architectural direction, *Storage is separate from compute*) | a task on a host that holds a volume, never a task without a host — the instance (Amazon ECS on Amazon EC2), not the form without one (AWS Fargate) |
+| does a stage need the host's disk between runs? | yes: the database file under its whole-file lock, the raw ZIPs and the artifacts at one path, read and written through the `/store/<content>` mounts each stage is given (`AGENTS.md` § Pre-AWS architectural direction, *Storage is separate from compute*) | a task on a host that holds a volume, never a task without a host — the instance (Amazon ECS on Amazon EC2), not the form without one (AWS Fargate) |
 | how many hosts, how many services? | one host; six services — the runners `data`, `features`, `ml` and the residents `dashboard`, `asset-<ticker>`, `devops` (`skill_asset_containers.md` § The topology) | the container service on that host, not a cluster — Amazon ECS, not Amazon EKS |
 | where does the host take the image from? | one image per module repository, `liora-module-<domain>`, the service — a runner or a resident — and its command deciding the role, `ASSET` only the resident's (§ Docker is compute, not storage) | one registry, four images, each tag the commit of its repository (Amazon ECR) |
 
@@ -192,7 +192,7 @@ asset is one more `asset-<ticker>`. A rename.
 
 Why the service on an instance and no other form: this repository agreed that a
 container is compute and never the owner of state — the `store_*` roots on a
-disk, one writer under a whole-file lock, the four store mounts the only mounts — and Amazon
+disk, one writer under a whole-file lock, the store mounts the only mounts — and Amazon
 ECS on Amazon EC2 is the one form in which that agreement moves as a rename (a
 host, a volume, a launcher) and not a rebuild; a task without a host, or on a
 host the provider holds, takes the disk and the socket away, and a cluster adds
@@ -380,7 +380,7 @@ missed.
 - **The lift.** The task host with its store volume, the workspace checked out
   onto the volume, `docker compose` as it is, a hand typing `make all` as
   here. Nothing in the compose file changes: the workspace sits on the volume,
-  so the four `./store_<content>` mounts already are the volume, and everything
+  so the `./store_<content>` mounts already are the volume, and everything
   the Makefile assumes still holds.
 - **The idiom.** One task definition registered with the service that runs the
   tasks; `./store_<content>` → `<volume>/<content>` in the anchor's four lines
@@ -543,7 +543,7 @@ of one tree).
 | a per-asset stage, `--tickers <TICKER>`, one one-off container of its runner per asset — the `fanout` macro | COMPUTE — one stage for one asset | the same run with `--tickers <TICKER>` overridden, one per asset — BuildCanonicalData on the data-ingest task, AggregateBars to EvaluateStrategy on the ml-research task, whether the command is a `module_features` or a `module_ml` one; already a task run per stage per asset, no resident borrowed | a rename |
 | one compose service per ticker under one anchor, and the residents — `dashboard`, `devops`, `asset-<ticker>` — beside it | INFRASTRUCTURE — the parameter made visible | one task definition parameterised by `--tickers`, never a new unit per asset; `dashboard`, `devops` and one `asset-<ticker>` per ticker kept running on the same instance as services of the container runtime, one per service, as they are kept running here (Amazon ECS) | a rename |
 | the Makefile's `all:`, `data-all:`, `features-all:` and `ml-all:`, `xargs -P $(JOBS)`, `RUN_ID` | ORCHESTRATION — the explicit stage order, the width, the execution identity | a state machine whose states are the stages of § The Makefile is the developer interface, every fanned-out state a Map over `TICKERS` as wide as `JOBS`, and `run_id` as the execution name (AWS Step Functions) | a rename |
-| the four `./store_<content>:/store/<content>` mounts of every service — the stores at one path each, and nothing of the code | STORAGE — the home of state | a durable block volume mounted at `/store` by every task and service of the instance — `./store_<content>` read as `<volume>/<content>` in the anchor's four lines and the ones `dashboard` respells, every store at the path its `STORE_*_DIR` names today (Amazon EBS); never a network filesystem, never a task's own disk (§ The volume is the home, the store is the copy) | a rename |
+| the `./store_<content>:/store/<content>` mounts each service is given — the stores it touches at one path each, read-only where it only reads, and nothing of the code | STORAGE — the home of state | a durable block volume mounted at `/store` by every task and service of the instance — `./store_<content>` read as `<volume>/<content>` in the anchor's four lines and the ones `dashboard` respells, every store at the path its `STORE_*_DIR` names today (Amazon EBS); never a network filesystem, never a task's own disk (§ The volume is the home, the store is the copy) | a rename |
 | `store_raw_1m/cryptofuture/<venue>/minute/<symbol>/YYYYMMDD_trade.zip` | STORAGE — raw, immutable, one object per UTC day | the same tree on the volume, and its copy under `raw/<venue>/<symbol>/<day>` in object storage after the run, each day object written once (Amazon S3) | a rename |
 | `store_assets_artifacts/<TICKER>/` | STORAGE — one prefix per asset | the same folder on the volume, and its copy under `artifacts/<ticker>/<version>/` in object storage after the run, the version the execution name, each key the descriptor's path relative to `STORE_ASSETS_ARTIFACTS_DIR` (Amazon S3) — nothing to edit in either descriptor | a rename |
 | `<TICKER>_research_ohlcv.duckdb` | STORAGE — the canonical market object, one writer at a time | the same embedded file on the volume, opened by the same process under the same whole-file lock, copied whole to the asset's version prefix after the run — never a database process, never a shared network filesystem; a managed database (Amazon RDS) only past the threshold of § The databases | a rename |
@@ -568,7 +568,7 @@ of one tree).
 | a batch service (AWS Batch) | a queue and a job definition for stages that are already an ordered list; the state machine is the order, the service that runs the tasks is the container |
 | a run without a host first (AWS Fargate) | no host, no volume, no file — a sentence in the `run --rm -T <runner>` row of § The mapping table, never a phase (§ The retrain runtime is a ladder) |
 | a cluster for one host (Amazon EKS) | a control plane, nodes and manifests kept running for six services on one host — the *no Kubernetes* of § Non-goals, and the one rule behind them; the question *how many hosts, how many services?* of § Infrastructure seats answers one host |
-| a task on a host the provider holds (Amazon ECS Managed Instances) | no bind mount to a path on a host this project holds, and no host daemon socket — the four store mounts on every service and `/var/run/docker.sock` in `devops` (`docker-compose.yml`; `skill_asset_containers.md`, *The socket rule, and its one scope*) are both a path on the host |
+| a task on a host the provider holds (Amazon ECS Managed Instances) | no bind mount to a path on a host this project holds, and no host daemon socket — the store mounts of every service and `/var/run/docker.sock` in `devops` (`docker-compose.yml`; `skill_asset_containers.md`, *The socket rule, and its one scope*) are both a path on the host |
 | a managed web service for the dashboard (AWS App Runner) | the page is published on loopback alone and reached through the tunnel (the Orchestration `README.md` § Quickstart); a front is refused until a reader outside the host appears — the static dashboard row of § The mapping table |
 | a stage as a function run from the image on an event (AWS Lambda) | a stage reads a store and writes a store on the disk the next stage reads (`AGENTS.md` § Pre-AWS architectural direction, *Compute owns no state*, *Storage is separate from compute*); the search and the training are not short functions, and no event exists to run one on (§ The rebuild condition stays separable) |
 
@@ -594,26 +594,24 @@ file per asset — trivial locally, the same file on a durable volume later,
 copied whole to its version. BAD: a local PostgreSQL "because the cloud should
 have a database".
 
-## What the split added, and what it did not
+## What the shape holds, and what it does not
 
-The monorepo `LIORA-MLOps-Portfolio` became five repositories (`AGENTS.md`
-§ The split — what holds five repositories together). Against the question this
-skill asks — is each boundary the one a move would keep — the split added
-exactly six things, each a seat this skill had already named: an image per
-module, built from that module's repository alone; the stores explicit and
-outside compute — four `STORE_*_DIR`, mounted at `/store/<content>`, and no code
-mount; the orchestration outside the modules — one Makefile and one compose file
-in a repository that holds no stage; the contracts between modules as files
-where imports were — `<TICKER>_catalogue.json`, the three snapshots, the run
-record, and the registered copies of `glossary.md` § Twice by extraction; the
-asset as a parameter of the launcher alone, `TICKERS` and `--tickers`; and a
-recorder that measures what a stage wrote off the stores, knowing no module. It
-added nothing of a cloud: no Terraform or CloudFormation, no registry, no task
-definition, no object-storage adapter, no secrets store, no state machine, no
-AWS SDK, no CI, no tests, no guards. The ladder's third phase, *the image
-carries the code*, is where the tree now stands; the lift and the idiom remain
-elsewhere, and the mapping table's column *the move* reads *a rename* on every
-row it read so before.
+Against the question this skill asks — is each boundary the one a move would
+keep — five repositories hold exactly six things, each a seat this skill names:
+an image per module, built from that module's repository alone; the stores
+explicit and outside compute — four `STORE_*_DIR`, mounted at `/store/<content>`
+into each service that touches them, and no code mount; the orchestration
+outside the modules — one Makefile and one compose file in a repository that
+holds no stage; the contracts between modules as files instead of imports —
+`<TICKER>_catalogue.json`, the three snapshots, the run record, and the
+registered copies of `glossary.md` § Twice by extraction; the asset as a
+parameter of the launcher alone, `TICKERS` and `--tickers`; and a recorder that
+measures what a stage wrote off the stores, knowing no module. They hold nothing
+of a cloud: no Terraform or CloudFormation, no registry, no task definition, no
+object-storage adapter, no secrets store, no state machine, no AWS SDK, no CI,
+no tests, no guards. The ladder's third phase, *the image carries the code*, is
+where the tree stands; the lift and the idiom are elsewhere, and the mapping
+table's column *the move* reads *a rename* on every row.
 
 ## What stays as it is, and why
 

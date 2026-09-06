@@ -170,8 +170,7 @@ recognisable by eye before it is parsed (neuro-optical consistency):
   begins with the exact canonical root token, so the name predicts the
   directory it names — on the host `STORE_RAW_1M_DIR` → `store_raw_1m/`,
   `STORE_RUN_RECORDS_DIR` → `store_run_records/`, in a container the same
-  variables → `/store/raw_1m`, `/store/run_records`; `MODULE_MONITORING_DIR` →
-  `module_monitoring/`;
+  variables → `/store/raw_1m`, `/store/run_records`;
 - one convention per language: BEM in CSS, snake_case in Python and JSON,
   the same hierarchy everywhere, no accidental exceptions.
 
@@ -206,9 +205,10 @@ and built nowhere.
   holds nothing between invocations, binds no port, reads no `ASSET` and assumes
   no resident peer.
 - **Storage is separate from compute.** Pipeline state lives in the four stores
-  — the `store_*` roots of the workspace, mounted into every container that
-  reads a store as `/store/<content>` (`devops` respells its mounts to the socket
-  alone) and named to every `config.py` by its `STORE_*_DIR` — never
+  — the `store_*` roots of the workspace, named to every `config.py` by its
+  `STORE_*_DIR` and mounted at `/store/<content>` into each service that touches
+  them, read-only where a service only reads
+  (`module_skills/skill_asset_containers.md` § The topology) — never
   inside a container and never inside a repository's tree; each image carries
   its module's code and nothing of the state, the mounts carry the state and
   nothing of the code, and the three snapshots are the one store that is tracked.
@@ -463,7 +463,7 @@ URL, and restates none of them.
 
 `module_skills/skill_asset_containers.md` is the worked example of the cross-cutting
 boundary: four images, the three runner services and `asset-<ticker>`, the Makefile
-fan-out, the ceilings and the store mounts are a contract between the
+fan-out, the ceilings and the store mounts each service is given are a contract between the
 infrastructure and all four runtime modules at once, so it belongs to none of
 them and stays in the canon.
 
@@ -485,16 +485,12 @@ mints it or nothing does.
 
 ## The split — what holds five repositories together
 
-The project was one repository, `LIORA-MLOps-Portfolio`, until the tag
-`monorepo-split-ready`; its `main` ends with the boundary refactor the split was
-cut from and a README banner naming Orchestration as its successor, and the tag
-`monorepo-baseline` marks the tree whose nine BTC artifacts every later commit
-reproduces byte for byte. What the split added is exactly this — an image per
-module, the stores explicit and outside compute, the orchestration outside the
-modules, the contracts between modules as files, the asset as a parameter, the
-recorder measuring what a stage wrote — and nothing of a cloud
-(`module_skills/skill_pre_aws_solution.md` § What the split added, and what it
-did not). The conditions below hold at every commit of Orchestration; a change
+The shape is five repositories: an image per module, the stores explicit and
+outside compute, the orchestration outside the modules, the contracts between
+modules as files, the asset as a parameter, the recorder measuring what a stage
+wrote — and nothing of a cloud
+(`module_skills/skill_pre_aws_solution.md` § What the shape holds, and what it
+does not). The conditions below hold at every commit of Orchestration; a change
 that breaks one is wrong.
 
 | # | holds |
@@ -535,12 +531,13 @@ last column says, and written when its one condition holds. Two rows the split
 answered are no longer here: the status prefix — the three snapshots live in
 `store_status/`, the one tracked store (`module_skills/glossary.md` § Stores) —
 and the image contents — each module repository's `Dockerfile` copies its
-package, and the mounts carry the four stores — and, on `dashboard`, the drawing
-read-only (`module_skills/skill_asset_containers.md` § The topology).
+package, and each service mounts the stores it touches — the `dashboard` those it
+reads and the drawing, all read-only
+(`module_skills/skill_asset_containers.md` § The topology).
 
 | skill | owner | governs | written when | described today in |
 |---|---|---|---|---|
-| `skill_task_host_volume.md` | `module_skills/` | the one Linux host every asset's runs share and the volume mounted where the four `./store_<content>` mounts are today — every asset's folder and the other `store_*` roots at the same `/store/<content>` paths, and what a task may leave on it | the first run whose `store_*` roots sit on a volume that is not the workspace's disk | `module_skills/skill_pre_aws_solution.md` § The volume is the home, the store is the copy; `module_skills/skill_asset_containers.md` § The topology |
+| `skill_task_host_volume.md` | `module_skills/` | the one Linux host every asset's runs share and the volume mounted where the `./store_<content>` mounts are today — every asset's folder and the other `store_*` roots at the same `/store/<content>` paths, and what a task may leave on it | the first run whose `store_*` roots sit on a volume that is not the workspace's disk | `module_skills/skill_pre_aws_solution.md` § The volume is the home, the store is the copy; `module_skills/skill_asset_containers.md` § The topology |
 | `skill_object_storage_layout.md` | `module_skills/` | the prefixes of the copy — `raw/<venue>/<symbol>/<day>` written once, `artifacts/<ticker>/<version>/`, `runs/<run_id>/`, `status/` — and the one discipline: a whole file copied after the last stage of a run has exited, never a path a stage writes | the first whole file copied off the host | `module_skills/skill_pre_aws_solution.md` § The volume is the home, the store is the copy; `module_skills/skill_pre_aws_solution.md` § The asset folder is a prefix, read forward |
 | `skill_stage_state_machine.md` | `module_skills/` | one state per stage in the order of `all:`, `data-all:`, `features-all:` and `ml-all:`, a Map over `TICKERS` whose width is `JOBS`, the execution named by `run_id`, the whole-file copy as the state after the last stage, and the schedule that starts it | the first stage launched by something other than `make` | `module_skills/skill_pre_aws_solution.md` § The Makefile is the developer interface; `module_skills/skill_pre_aws_solution.md` § The retrain runtime is a ladder |
 | `skill_rebuild_condition.md` | `module_skills/` | the four `has_` / `requires_` predicates — read-only, per asset, in the module that owns what they compare — and the condition state that reads them; never a function that both detects and trains | the first freshness predicate is written, `has_new_market_data(ticker)` in `module_data` | `module_skills/skill_pre_aws_solution.md` § The rebuild condition stays separable; `module_skills/glossary.md` § Pre-AWS direction |
