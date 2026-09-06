@@ -7,11 +7,17 @@ project; there this repository is the submodule `902-module_features/`, and
 its stages run in one-off containers of its image. This repository also runs
 standalone: `make setup`, then `make <stage> ASSET=<TICKER>` against the four
 `STORE_*_DIR` it is given — the workspace's stores one level up by default, any
-directory by setting the variables. `make help` lists the stages.
+directory by setting the variables, always outside this checkout: a store is state,
+and nothing a stage writes is ever committed here. `make help` lists the stages.
+
+A change here reaches the project in two steps: a pull request against `main` of
+this repository, and — once it is merged — a commit in LIORA-MLOps-Portfolio-Orchestration that moves this
+submodule's pin to the merged commit; until the pin moves, the workspace still
+builds the old commit (the Orchestration `README.md` § Contributing).
 
 ## Store contract
 
-Every stage reads a store, writes a store and exits; it learns where the stores are from `STORE_RAW_1M_DIR`, `STORE_ASSETS_ARTIFACTS_DIR`, `STORE_RUN_RECORDS_DIR` and `STORE_STATUS_DIR`, and nothing else on the host.
+Every stage reads a store, writes a store and exits; it learns where the stores are from `STORE_ASSETS_ARTIFACTS_DIR`, `STORE_STATUS_DIR` — the 2 of the four stores this module touches — and nothing else on the host.
 
 | stage | reads | writes |
 |---|---|---|
@@ -28,13 +34,18 @@ Every stage reads a store, writes a store and exits; it learns where the stores 
 The module's front door is `module_features/README_module_features.md`; its own rules are
 `module_features/skills/`. `AGENTS.md` and `module_skills/` here are read-only copies
 of the canon in LIORA-MLOps-Portfolio-Orchestration, stamped by `module_skills/distributed_from.md`; a rule is
-changed at the source and distributed, never edited here.
+changed at the source and distributed, never edited here — a copy touched here is
+reported by `make skills-status` in the Orchestration workspace and reverted. Before
+proposing a change, rerun the affected stages and compare the bytes of the artifacts
+with the run before it (`module_skills/skill_determinism.md`), and say in the pull
+request which stages were rerun.
 
 ## Extending
 
 | to add | change |
 |---|---|
 | an asset | `TICKERS` in the Orchestration Makefile and an `asset-<ticker>` block in its docker-compose.yml; nothing changes here |
+| a stage | `module_features/<stage>.py` with `main()` and `--tickers`, one line in this repository's `Makefile` — a venv command only, no docker, compose or tmux word (`AGENTS.md` § The split, D14) — and a row in `module_features/README_module_features.md` § Stages and § Design rationale; then, in Orchestration, its `<module>-<stage>` target (the Orchestration `README.md` § Extending) |
 | a timeframe, an indicator, a feature definition | one record in one register of `module_features/config.py` — `module_features/README_module_features.md` § Extending says what each costs and which bytes stay identical |
 
 ## Necessary duplicates

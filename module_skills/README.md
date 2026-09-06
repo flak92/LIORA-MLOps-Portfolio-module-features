@@ -21,6 +21,7 @@ read this file, those links point at the same document.
 | [skill_asset_containers.md](skill_asset_containers.md) | the compose topology — four images, three runners, three residents —, the container endpoint and the scoped socket rule: the runtime contract every module runs inside |
 | [skill_determinism.md](skill_determinism.md) | bit parity, thread caps and where speed is allowed to come from |
 | [skill_developer_experience_drawing.md](skill_developer_experience_drawing.md) | the developer-experience drawing of the whole tracked tree — the Orchestration repository's own, served by the dashboard — its two views and its configuration surface |
+| [skill_module_repository_seat.md](skill_module_repository_seat.md) | the shape of a module repository, file by file, and the seven steps that seat one in the workspace |
 | [skill_pre_aws_solution.md](skill_pre_aws_solution.md) | the Pre-AWS direction: which local boundary answers to which standard cloud primitive, the twelve classes, the four seat paragraphs, the ladder, the non-goals, what the split added and what it did not, and why none of it is built |
 | [skill_self_explaining_naming.md](skill_self_explaining_naming.md) | names derived from a closed grammar, and how a new convention is minted |
 | [skill_sorting_files_naming_standard.md](skill_sorting_files_naming_standard.md) | taxonomic ordering, zero-padding and the timeframe slot standard |

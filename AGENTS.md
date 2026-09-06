@@ -87,7 +87,9 @@ package unchanged — beside its own `Dockerfile`, `requirements.txt`, `Makefile
 Orchestration repository pins the four as git submodules, checked out as
 `901-module_data/`, `902-module_features/`, `903-module_ml/`,
 `904-module_monitoring/`; a clone of Orchestration with `--recurse-submodules` is
-the workspace, and `make all` in it runs the chain. A path written
+the workspace, and `make all` in it runs the chain. The shape of a module
+repository, file by file, and the steps that seat one in the workspace are
+`module_skills/skill_module_repository_seat.md`. A path written
 `module_<domain>/…` in this contract or in a skill names the package wherever it
 is checked out — at the root of its own repository, and under
 `<9NN>-module_<domain>/` in the workspace — so the same sentence is true in the
@@ -204,8 +206,9 @@ and built nowhere.
   holds nothing between invocations, binds no port, reads no `ASSET` and assumes
   no resident peer.
 - **Storage is separate from compute.** Pipeline state lives in the four stores
-  — the `store_*` roots of the workspace, mounted into every container as
-  `/store/<content>` and named to every `config.py` by its `STORE_*_DIR` — never
+  — the `store_*` roots of the workspace, mounted into every container that
+  reads a store as `/store/<content>` (`devops` respells its mounts to the socket
+  alone) and named to every `config.py` by its `STORE_*_DIR` — never
   inside a container and never inside a repository's tree; each image carries
   its module's code and nothing of the state, the mounts carry the state and
   nothing of the code, and the three snapshots are the one store that is tracked.
@@ -375,7 +378,7 @@ The boundaries, each with the file that owns it: the QuantConnect Lean tree
 (`module_data/lean.py`), the Binance and Bybit REST parameters
 (`download_binance.py`, `download_bybit.py`), xgboost and optuna
 (`module_ml/model.py`, `module_ml/hpo.py`), numpy (every module that computes),
-argparse (`module_data/config.py`, `module_features/config.py`, `module_ml/config.py` — the one parser, twice by extraction —, `module_data/status.py`,
+argparse (`module_data/config.py`, `module_features/config.py`, `module_ml/config.py` — the one parser, twice by extraction —,
 `module_ml/feature_set_promote.py`, `sub_module_dx/visualise.py`), DuckDB SQL (every module that queries), the SVG
 and DOM attributes (every `*.js` of `module_monitoring`, its sub-modules included, and the canvas of
 the drawing's template), docker compose (`Makefile`,
